@@ -84,10 +84,10 @@ func main() {
 
 	flag.IntVar(&port, "port", 8080, "listen port(default: 8080)")
 	flag.IntVar(&port, "p", 8080, "listen port")
-	flag.StringVar(&prefix, "prefix", "/", "prefix of url")
+	flag.StringVar(&prefix, "prefix", "", "prefix of url")
 	flag.Parse()
 
-	if len(prefix) < 1 || prefix[0] != '/' {
+	if len(prefix) > 1 && prefix[0] != '/' {
 		prefix = "/" + prefix
 	}
 
