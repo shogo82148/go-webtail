@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/shogo82148/go-webtail"
 	"golang.org/x/net/websocket"
 )
 
@@ -56,7 +57,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	t, _ := NewTailReader(os.Stdin)
+	t, _ := webtail.NewTailReader(os.Stdin)
 
 	http.Handle("/follow", websocket.Handler(t.FollowHandler))
 	http.HandleFunc("/", IndexHandler)
