@@ -46,7 +46,7 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
                 elem.appendChild(line);
             }
             reconnecting = true;
-            setTimeout(reconnect, 1000);
+            setTimeout(reconnect, 10000);
         });
 
         socket.addEventListener("error", function (e) {
