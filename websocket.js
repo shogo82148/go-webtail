@@ -1,4 +1,4 @@
-var uri = "ws://" + location.host + "/echo";
+var uri = "ws://" + location.host + "/follow";
 var socket = new WebSocket(uri);
 
 socket.addEventListener("open", function (e) {
@@ -18,5 +18,5 @@ socket.addEventListener("close", function (e) {
 
 socket.addEventListener("message", function (e) {
     var data = JSON.parse(e.data);
-    document.getElementById("messages").innerHTML += "<div>" + data.Str + "</div>";
+    document.getElementById("messages").innerHTML += "<div>" + data.text + "</div>";
 });
