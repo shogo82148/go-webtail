@@ -26,6 +26,7 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
     <pre id="lines"></pre>
     <script type="text/javascript">
 (function(){
+    var reconnecting = true;
     function connect(uri) {
         var socket = new WebSocket(uri);
         var elem = document.getElementById("lines");
@@ -34,21 +35,27 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
             line.className = "system-message";
             line.innerText = "connection connected";
             elem.appendChild(line);
+            reconnecting = false;
         });
 
         socket.addEventListener("close", function (e) {
-            var line = document.createElement("div");
-            line.className = "system-message";
-            line.innerText = "connection closed";
-            elem.appendChild(line);
+            if (!reconnecting) {
+                var line = document.createElement("div");
+                line.className = "system-message";
+                line.innerText = "connection closed";
+                elem.appendChild(line);
+            }
+            reconnecting = true;
             setTimeout(reconnect, 1000);
         });
 
         socket.addEventListener("error", function (e) {
-            var line = document.createElement("div");
-            line.className = "system-message";
-            line.innerText = "connection error";
-            elem.appendChild(line);
+            if (!reconnecting) {
+                var line = document.createElement("div");
+                line.className = "system-message";
+                line.innerText = "connection error";
+                elem.appendChild(line);
+            }
         });
 
         socket.addEventListener("message", function (e) {
