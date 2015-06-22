@@ -113,6 +113,16 @@ func (t *Tail) FollowHandler(ws *websocket.Conn) {
 		return
 	}
 
+	go func() {
+		for {
+			var message string
+			err := websocket.Message.Receive(ws, &message) // ignore message
+			if err != nil {
+				break
+			}
+		}
+	}()
+
 	// wait new lines
 	for {
 		line := <-ch

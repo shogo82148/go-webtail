@@ -27,8 +27,9 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
     <script type="text/javascript">
 (function(){
     var reconnecting = true;
+    var socket;
     function connect(uri) {
-        var socket = new WebSocket(uri);
+        socket = new WebSocket(uri);
         var elem = document.getElementById("lines");
         socket.addEventListener("open", function (e) {
             var line = document.createElement("div");
@@ -39,6 +40,7 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
         });
 
         socket.addEventListener("close", function (e) {
+            socket = undefined;
             if (!reconnecting) {
                 var line = document.createElement("div");
                 line.className = "system-message";
@@ -70,6 +72,11 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
     function reconnect() {
         connect(uri);
     }
+
+    setInterval(function() {
+        if (socket) socket.send('ping');
+    }, 20*1000);
+
 })();
     </script>
   </body>
