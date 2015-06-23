@@ -21,8 +21,8 @@ deploy:
     - build/webtail_freebsd_amd64
     - build/webtail_openbsd_386
     - build/webtail_openbsd_amd64
-    - build/webtail_windows_386
-    - build/webtail_windows_amd64
+    - build/webtail_windows_386.exe
+    - build/webtail_windows_amd64.exe
     - build/webtail_freebsd_arm
     - build/webtail_netbsd_386
     - build/webtail_netbsd_amd64
