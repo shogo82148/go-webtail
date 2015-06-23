@@ -1,3 +1,17 @@
 language: go
 go:
-- '1.4'
+  - '1.4'
+install:
+  - go get github.com/mitchellh/gox
+  - gox -build-toolchain
+script:
+  - gox github.com/shogo82148/go-webtail/cmd/webtail -output build/{{.Dir}}_{{.OS}}_{{.Arch}}
+deploy:
+  provider: releases
+  api_key:
+    secure: PHCG/wY8CPSm3ks6QJdLjZ9w8wxUg23ZXcF7eKBm2mESqG11Nt2uhjHOiCyUQhSnZyGM7Ayf2C00bOACdo4UrFSpvEZTuYTwxMiZs04GGWMYXVZuA0FWROg3Emp4tfecOoLCE6SavEN25OzNX2YM5NR+ZKB4e6mshE8gZgq8mBilWcAZOHrQi9vNs8N8uPQBcT1YkfcMmsofW2ZLth/LCc6DBEI4bNcLsq1K5VQkJ3DtlMDrD2z0xsvl5RhKXiEuF2V+DxIyuc8HhaGS1ksYVMLcc7/REkBsKGRlcjQKql5PvwT0Tm837hFs0YYB0bWDULeBCF19GKLnUQ+VIUJH6qsc57S7fl8SsOiOuRZ9DCYZ9Ntg6EcKyDuIBRRBo7C/7M9aMJnnedBodF3OjYaW12dVvNGpgH8u67nGbMoWf5k830U+A59olm4FxD4sIKnPp9TW4ecoEQ7l6wtC6OqI6DIttGmvW2QX3zzeSVvqN65hbxvI7NfETGsrHngPhrkkcfh8q/tqc3Vhv0x9YuDnkK8+yxRqzY9qWXxep8eExiyCuUJAKApL/wZ2P/WzevN+34K+wcrt88xrIgwCitjlQXKttqxHJE0PKGk3/NWfe6UOsRUGcmPlMMxokhne1nLVDK5+UiKLQH0eyqAe2HFmFPs41PAn2VeImAPy7hPyYVE=
+  file: build/*
+  on:
+    repo: shogo82148/go-webtail
+    tags: true
+  skip_cleanup: true
