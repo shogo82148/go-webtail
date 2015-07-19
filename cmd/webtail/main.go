@@ -88,10 +88,14 @@ func IndexHandler(prefix string) func(w http.ResponseWriter, r *http.Request) {
 func main() {
 	var port int
 	var prefix string
+	var bufferLines int
+	var playBackLines int
 
 	flag.IntVar(&port, "port", 8080, "listen port(default: 8080)")
 	flag.IntVar(&port, "p", 8080, "listen port")
 	flag.StringVar(&prefix, "prefix", "", "prefix of url")
+	flag.IntVar(&bufferLines, "buffer", 10240, "buffering lines(default: 10240)")
+	flag.IntVar(&playBackLines, "playback", 10, "auto play back lines(default: 10)")
 	flag.Parse()
 
 	if len(prefix) > 1 && prefix[0] != '/' {
@@ -107,11 +111,15 @@ func main() {
 		if file == "-" {
 			// tail stdin
 			t, _ := webtail.NewTailReader(os.Stdin)
+			t.BufferLines = bufferLines
+			t.PlayBackLines = playBackLines
 			http.Handle(prefix+"/follow", http.StripPrefix(prefix, websocket.Handler(t.FollowHandler)))
 			http.HandleFunc(prefix+"/", IndexHandler(prefix))
 		} else {
 			// tail file
 			t, _ := webtail.NewTailFile(file)
+			t.BufferLines = bufferLines
+			t.PlayBackLines = playBackLines
 			basename := path.Base(file)
 			http.Handle(prefix+"/"+basename+"/follow", http.StripPrefix(prefix+"/"+basename, websocket.Handler(t.FollowHandler)))
 			http.HandleFunc(prefix+"/"+basename, IndexHandler(prefix+"/"+basename))

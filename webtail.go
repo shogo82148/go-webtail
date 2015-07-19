@@ -12,8 +12,6 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-const MaxLines = 10240
-
 type Line struct {
 	Text   string    `json:"text"`
 	Time   time.Time `json:"time"`
@@ -21,6 +19,12 @@ type Line struct {
 }
 
 type Tail struct {
+	// BufferLines is buffer size for play back
+	BufferLines int
+
+	// PlayBackLines is the number of lines for auto play back
+	PlayBackLines int
+
 	ps     *pubsub.PubSub
 	t      *tail.Tail
 	mu     sync.RWMutex
@@ -77,9 +81,11 @@ func (t *Tail) addNewLine(newline *tail.Line) {
 	}
 	t.ps.Pub(line)
 
-	t.lines.PushBack(line)
-	for t.lines.Len() > MaxLines {
-		t.lines.Remove(t.lines.Front())
+	if t.BufferLines > 0 {
+		t.lines.PushBack(line)
+		for t.lines.Len() > t.BufferLines {
+			t.lines.Remove(t.lines.Front())
+		}
 	}
 }
 
@@ -96,7 +102,15 @@ func (t *Tail) FollowHandler(ws *websocket.Conn) {
 		t.mu.RLock()
 		defer t.mu.RUnlock()
 
-		for e := t.lines.Front(); e != nil; e = e.Next() {
+		e := t.lines.Back()
+		for i := 1; e != nil && i < t.PlayBackLines; e = e.Prev() {
+			i++
+		}
+		if e == nil {
+			e = t.lines.Front()
+		}
+
+		for ; e != nil; e = e.Next() {
 			line, ok := e.Value.(*Line)
 			if !ok {
 				continue
