@@ -18,11 +18,20 @@ const indexHTML = `<!DOCTYPE html>
     function connect(uri) {
         socket = new WebSocket(uri);
         var elem = document.getElementById("lines");
+
+       function addNewLine(newLine) {
+            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            var windowHeight = document.documentElement.clientHeight;
+            var needScroll = scrollTop + windowHeight >= elem.scrollTop + elem.scrollHeight;
+            elem.appendChild(newLine);
+            if (needScroll) window.scroll(0, elem.scrollTop + elem.scrollHeight);
+       }
+
         socket.addEventListener("open", function (e) {
             var line = document.createElement("div");
             line.className = "system-message";
             line.innerText = "connection connected";
-            elem.appendChild(line);
+            addNewLine(line);
             reconnecting = false;
         });
 
@@ -32,7 +41,7 @@ const indexHTML = `<!DOCTYPE html>
                 var line = document.createElement("div");
                 line.className = "system-message";
                 line.innerText = "connection closed";
-                elem.appendChild(line);
+                addNewLine(line);
             }
             reconnecting = true;
             setTimeout(reconnect, 10000);
@@ -43,7 +52,7 @@ const indexHTML = `<!DOCTYPE html>
                 var line = document.createElement("div");
                 line.className = "system-message";
                 line.innerText = "connection error";
-                elem.appendChild(line);
+                addNewLine(line);
             }
         });
 
@@ -51,7 +60,7 @@ const indexHTML = `<!DOCTYPE html>
             var data = JSON.parse(e.data);
             var line = document.createElement("div");
             line.innerText = data.text;
-            elem.appendChild(line);
+            addNewLine(line);
         });
     }
     var uri = "ws://" + location.host + "%s/follow";
