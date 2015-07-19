@@ -2,8 +2,11 @@ package webtail
 
 import (
 	"container/list"
+	"encoding/json"
 	"io"
 	"log"
+	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -89,43 +92,44 @@ func (t *Tail) addNewLine(newline *tail.Line) {
 	}
 }
 
+func (t *Tail) TailHandler(w http.ResponseWriter, r *http.Request) {
+	values := r.URL.Query()
+	strLines := values.Get("lines")
+	numLines := t.PlayBackLines
+	if strLines != "" {
+		numLines, _ = strconv.Atoi(strLines)
+	}
+
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	e := t.lines.Back()
+	for i := 1; e != nil && i < numLines; e = e.Prev() {
+		i++
+	}
+	if numLines <= 0 || e == nil {
+		e = t.lines.Front()
+	}
+
+	lines := []*Line{}
+	for ; e != nil; e = e.Next() {
+		line, ok := e.Value.(*Line)
+		if !ok {
+			continue
+		}
+		lines = append(lines, line)
+	}
+
+	encoder := json.NewEncoder(w)
+	encoder.Encode(lines)
+}
+
 func (t *Tail) FollowHandler(ws *websocket.Conn) {
 	// start subscribe
 	ch := make(chan *Line)
 	sub := func(l *Line) { ch <- l }
 	t.ps.Sub(sub)
 	defer t.ps.Leave(sub)
-
-	// send lines in buffer
-	var lastNumber int64
-	err := func() error {
-		t.mu.RLock()
-		defer t.mu.RUnlock()
-
-		e := t.lines.Back()
-		for i := 1; e != nil && i < t.PlayBackLines; e = e.Prev() {
-			i++
-		}
-		if e == nil {
-			e = t.lines.Front()
-		}
-
-		for ; e != nil; e = e.Next() {
-			line, ok := e.Value.(*Line)
-			if !ok {
-				continue
-			}
-			if err := websocket.JSON.Send(ws, line); err != nil {
-				return err
-			}
-			lastNumber = line.Number
-		}
-		return nil
-	}()
-	if err != nil {
-		log.Print(err)
-		return
-	}
 
 	go func() {
 		for {
@@ -140,13 +144,9 @@ func (t *Tail) FollowHandler(ws *websocket.Conn) {
 	// wait new lines
 	for {
 		line := <-ch
-		if line.Number <= lastNumber {
-			continue
-		}
 		if err := websocket.JSON.Send(ws, line); err != nil {
 			log.Print(err)
 			break
 		}
-		lastNumber = line.Number
 	}
 }

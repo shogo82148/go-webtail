@@ -45,6 +45,7 @@ func main() {
 			t, _ := webtail.NewTailReader(os.Stdin)
 			t.BufferLines = bufferLines
 			t.PlayBackLines = playBackLines
+			http.Handle(prefix+"/tail", http.StripPrefix(prefix, http.HandlerFunc(t.TailHandler)))
 			http.Handle(prefix+"/follow", http.StripPrefix(prefix, websocket.Handler(t.FollowHandler)))
 			http.HandleFunc(prefix+"/", IndexHandler(prefix))
 		} else {
@@ -53,6 +54,7 @@ func main() {
 			t.BufferLines = bufferLines
 			t.PlayBackLines = playBackLines
 			basename := path.Base(file)
+			http.Handle(prefix+"/tail", http.StripPrefix(prefix, http.HandlerFunc(t.TailHandler)))
 			http.Handle(prefix+"/"+basename+"/follow", http.StripPrefix(prefix+"/"+basename, websocket.Handler(t.FollowHandler)))
 			http.HandleFunc(prefix+"/"+basename, IndexHandler(prefix+"/"+basename))
 		}
