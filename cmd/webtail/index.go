@@ -10,6 +10,7 @@ const indexHTML = `<!DOCTYPE html>
   </head>
 
   <body>
+    <div><a href="?full">show all lines in buffer</a></div>
     <pre id="lines"></pre>
     <script type="text/javascript">
 (function(){
@@ -20,6 +21,7 @@ const indexHTML = `<!DOCTYPE html>
     var socket;
     var xhr;
     var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    var showAll = window.location.search === "?full";
 
     var elem = document.getElementById("lines");
     function addNewLines(newLines) {
@@ -38,7 +40,8 @@ const indexHTML = `<!DOCTYPE html>
 
     function playBack() {
         xhr = new XMLHttpRequest();
-        xhr.open("GET", prefix + "/tail");
+        xhr.open("GET", prefix + "/tail" + (showAll ? "?lines=0" : ""));
+        showAll = false;
         xhr.send();
         playing_back = true;
         xhr.addEventListener("load", function(ev) {
