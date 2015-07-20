@@ -120,6 +120,7 @@ func (t *Tail) TailHandler(w http.ResponseWriter, r *http.Request) {
 		lines = append(lines, line)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	encoder := json.NewEncoder(w)
 	encoder.Encode(lines)
 }
