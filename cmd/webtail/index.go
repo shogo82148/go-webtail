@@ -20,13 +20,11 @@ const indexHTML = `<!DOCTYPE html>
     var buf = [];
     var socket;
     var xhr;
-    var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    var needScroll;
     var showAll = window.location.search === "?full";
 
     var elem = document.getElementById("lines");
     function addNewLines(newLines) {
-        var windowHeight = document.documentElement.clientHeight;
-        var needScroll = scrollTop + windowHeight >= elem.scrollTop + elem.scrollHeight;
         var i;
         for (i = 0; i < newLines.length; i++) {
             elem.appendChild(newLines[i]);
@@ -35,7 +33,9 @@ const indexHTML = `<!DOCTYPE html>
     }
 
     window.addEventListener('scroll', function (e) {
-        scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var windowHeight = document.documentElement.clientHeight;
+        needScroll = scrollTop + windowHeight >= elem.scrollTop + elem.scrollHeight;
     });
 
     function playBack() {
